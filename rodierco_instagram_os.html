@@ -1,0 +1,868 @@
+
+<!DOCTYPE html>
+<html>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); background: transparent; color: var(--color-text-primary); }
+
+.os-header {
+  text-align: center;
+  padding: 2rem 1rem 1.5rem;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+  margin-bottom: 0;
+}
+.logo { font-size: 11px; letter-spacing: 0.25em; color: var(--color-text-secondary); text-transform: uppercase; margin-bottom: 6px; }
+.os-title { font-size: 22px; font-weight: 500; }
+.os-sub { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+
+.tab-bar {
+  display: flex;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab {
+  flex: 1;
+  min-width: 100px;
+  padding: 12px 8px;
+  text-align: center;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color 0.2s, border-color 0.2s;
+  user-select: none;
+}
+.tab.active { color: var(--color-text-primary); border-bottom-color: var(--color-text-primary); font-weight: 500; }
+.tab:hover:not(.active) { color: var(--color-text-primary); }
+
+.section { display: none; padding: 1.5rem 1rem; }
+.section.active { display: block; }
+
+.card {
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-lg);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+.card-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.75rem;
+}
+
+.score-ring-wrap { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1rem; }
+.score-ring svg { flex-shrink: 0; }
+.score-ring-text h2 { font-size: 28px; font-weight: 500; }
+.score-ring-text p { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; }
+
+.checklist { display: flex; flex-direction: column; gap: 10px; }
+.check-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 13px; cursor: pointer;
+}
+.check-box {
+  width: 18px; height: 18px; border-radius: 4px;
+  border: 0.5px solid var(--color-border-secondary);
+  flex-shrink: 0; margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s, border-color 0.2s;
+}
+.check-box.done { background: var(--color-background-success); border-color: var(--color-border-success); }
+.check-box.done::after { content: "✓"; font-size: 11px; color: var(--color-text-success); }
+.check-label { flex: 1; line-height: 1.4; }
+.check-label span { font-weight: 500; }
+.check-label small { display: block; color: var(--color-text-secondary); font-size: 12px; margin-top: 1px; }
+.badge {
+  font-size: 10px; padding: 2px 7px; border-radius: 99px;
+  font-weight: 500; flex-shrink: 0;
+}
+.badge.high { background: var(--color-background-danger); color: var(--color-text-danger); }
+.badge.med { background: var(--color-background-warning); color: var(--color-text-warning); }
+.badge.low { background: var(--color-background-success); color: var(--color-text-success); }
+
+.bio-builder { display: flex; flex-direction: column; gap: 10px; }
+.bio-preview {
+  background: var(--color-background-secondary);
+  border-radius: var(--border-radius-md);
+  padding: 1rem;
+  font-size: 13px; line-height: 1.6;
+  border: 0.5px solid var(--color-border-tertiary);
+  min-height: 80px;
+  white-space: pre-wrap;
+}
+.bio-line { display: flex; gap: 8px; align-items: center; }
+.bio-line input, .bio-line select {
+  flex: 1; font-size: 13px;
+  padding: 7px 10px;
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-md);
+  background: var(--color-background-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+}
+.btn-sm {
+  font-size: 12px; padding: 6px 12px;
+  border: 0.5px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-md);
+  background: transparent;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.btn-sm:hover { background: var(--color-background-secondary); }
+.btn-primary {
+  background: var(--color-text-primary);
+  color: var(--color-background-primary);
+  border-color: var(--color-text-primary);
+}
+.btn-primary:hover { opacity: 0.85; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.metric-card {
+  background: var(--color-background-secondary);
+  border-radius: var(--border-radius-md);
+  padding: 12px;
+  text-align: center;
+}
+.metric-val { font-size: 20px; font-weight: 500; }
+.metric-lbl { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+.content-pillars { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pillar {
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-md);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.pillar:hover { border-color: var(--color-border-primary); background: var(--color-background-secondary); }
+.pillar.selected { border-color: var(--color-border-primary); background: var(--color-background-secondary); }
+.pillar-icon { font-size: 18px; margin-bottom: 4px; }
+.pillar-name { font-size: 13px; font-weight: 500; }
+.pillar-desc { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-top: 8px;
+}
+.cal-day {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  border: 0.5px solid var(--color-border-tertiary);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  font-size: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  padding: 2px;
+  gap: 1px;
+}
+.cal-day:hover { border-color: var(--color-border-primary); }
+.cal-day .day-num { font-weight: 500; font-size: 11px; }
+.cal-day .post-dot { width: 5px; height: 5px; border-radius: 50%; }
+.cal-day.has-post { background: var(--color-background-secondary); }
+
+.post-generator { display: flex; flex-direction: column; gap: 12px; }
+.topic-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  padding: 5px 12px; border-radius: 99px;
+  font-size: 12px; cursor: pointer;
+  border: 0.5px solid var(--color-border-tertiary);
+  transition: all 0.15s; user-select: none;
+}
+.chip.selected {
+  background: var(--color-text-primary);
+  color: var(--color-background-primary);
+  border-color: var(--color-text-primary);
+}
+.generated-post {
+  background: var(--color-background-secondary);
+  border-radius: var(--border-radius-md);
+  padding: 1rem;
+  font-size: 13px; line-height: 1.7;
+  border: 0.5px solid var(--color-border-tertiary);
+  min-height: 120px;
+  white-space: pre-wrap;
+  display: none;
+}
+.generated-post.visible { display: block; }
+
+.hook-list { display: flex; flex-direction: column; gap: 6px; }
+.hook-item {
+  padding: 10px 12px;
+  background: var(--color-background-secondary);
+  border-radius: var(--border-radius-md);
+  font-size: 13px; cursor: pointer;
+  border: 0.5px solid transparent;
+  transition: border-color 0.15s;
+}
+.hook-item:hover { border-color: var(--color-border-secondary); }
+.hook-item span { color: var(--color-text-secondary); font-size: 11px; margin-left: 6px; }
+
+.funnel-steps { display: flex; flex-direction: column; gap: 0; }
+.funnel-step {
+  display: flex; align-items: stretch; gap: 0;
+}
+.funnel-line {
+  width: 2px; background: var(--color-border-tertiary);
+  margin: 0 15px; flex-shrink: 0;
+}
+.funnel-dot {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 0.5px solid var(--color-border-secondary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 500; flex-shrink: 0;
+  background: var(--color-background-primary);
+  margin-right: 12px; margin-top: 4px;
+}
+.funnel-content { flex: 1; padding-bottom: 20px; }
+.funnel-content h3 { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.funnel-content p { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+.funnel-content ul { font-size: 12px; color: var(--color-text-secondary); padding-left: 14px; margin-top: 4px; }
+.funnel-content ul li { margin-bottom: 2px; }
+
+.score-bar { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.bar-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.bar-label { min-width: 120px; color: var(--color-text-secondary); }
+.bar-track { flex: 1; height: 4px; background: var(--color-border-tertiary); border-radius: 2px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 2px; background: var(--color-text-primary); transition: width 0.6s ease; }
+.bar-val { min-width: 28px; text-align: right; font-weight: 500; }
+
+.posting-schedule { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 8px; }
+.sched-day { border: 0.5px solid var(--color-border-tertiary); border-radius: 6px; padding: 6px 4px; text-align: center; }
+.sched-day .d-name { font-size: 10px; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+.sched-day .d-slots { margin-top: 4px; display: flex; flex-direction: column; gap: 2px; }
+.sched-slot { font-size: 9px; padding: 2px 3px; border-radius: 3px; font-weight: 500; }
+.slot-reel { background: var(--color-background-danger); color: var(--color-text-danger); }
+.slot-post { background: var(--color-background-info); color: var(--color-text-info); }
+.slot-story { background: var(--color-background-warning); color: var(--color-text-warning); }
+
+.ai-indicator {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--color-text-secondary);
+  padding: 3px 8px; border-radius: 99px;
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+}
+.pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--color-text-success); animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+.divider { height: 0.5px; background: var(--color-border-tertiary); margin: 1rem 0; }
+
+.copy-btn {
+  font-size: 11px; padding: 4px 10px;
+  border: 0.5px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 0.15s;
+  margin-top: 6px;
+}
+.copy-btn:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+
+.hashtag-cloud { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.hashtag { font-size: 11px; padding: 3px 9px; border-radius: 99px; border: 0.5px solid var(--color-border-tertiary); color: var(--color-text-secondary); cursor: pointer; transition: all 0.15s; }
+.hashtag:hover { border-color: var(--color-border-primary); color: var(--color-text-primary); }
+.hashtag.core { font-weight: 500; color: var(--color-text-primary); border-color: var(--color-border-secondary); }
+</style>
+
+<div class="os-header">
+  <div class="logo">Rodier&Co</div>
+  <div class="os-title">Instagram Growth OS</div>
+  <div class="os-sub">Profil · Contenu · Funnel · Auto-Post</div>
+</div>
+
+<div class="tab-bar">
+  <div class="tab active" onclick="showTab('profile')">Profil</div>
+  <div class="tab" onclick="showTab('content')">Contenu</div>
+  <div class="tab" onclick="showTab('funnel')">Funnel</div>
+  <div class="tab" onclick="showTab('auto')">Auto-Post</div>
+  <div class="tab" onclick="showTab('ia')">IA Créateur</div>
+</div>
+
+<!-- TAB: PROFILE -->
+<div id="tab-profile" class="section active">
+
+  <div class="card">
+    <div class="card-title">Score de profil</div>
+    <div class="score-ring-wrap">
+      <svg width="72" height="72" viewBox="0 0 72 72">
+        <circle cx="36" cy="36" r="30" fill="none" stroke="var(--color-border-tertiary)" stroke-width="6"/>
+        <circle id="score-circle" cx="36" cy="36" r="30" fill="none" stroke="var(--color-text-primary)" stroke-width="6"
+          stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="94" transform="rotate(-90 36 36)"
+          style="transition: stroke-dashoffset 0.8s ease;"/>
+        <text x="36" y="41" text-anchor="middle" font-size="16" font-weight="500" fill="var(--color-text-primary)" id="score-text">50%</text>
+      </svg>
+      <div class="score-ring-text">
+        <h2>Profil à optimiser</h2>
+        <p>Cochez les actions complétées<br>pour voir votre score monter</p>
+      </div>
+    </div>
+
+    <div class="score-bar">
+      <div class="bar-row"><div class="bar-label">Photo / identité visuelle</div><div class="bar-track"><div class="bar-fill" id="bar-visual" style="width:30%"></div></div><div class="bar-val" id="bv-visual">30%</div></div>
+      <div class="bar-row"><div class="bar-label">Bio & CTA</div><div class="bar-track"><div class="bar-fill" id="bar-bio" style="width:20%"></div></div><div class="bar-val" id="bv-bio">20%</div></div>
+      <div class="bar-row"><div class="bar-label">Highlights stratégiques</div><div class="bar-track"><div class="bar-fill" id="bar-hl" style="width:10%"></div></div><div class="bar-val" id="bv-hl">10%</div></div>
+      <div class="bar-row"><div class="bar-label">Grille & cohérence</div><div class="bar-track"><div class="bar-fill" id="bar-grid" style="width:25%"></div></div><div class="bar-val" id="bv-grid">25%</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Checklist profil haute conversion</div>
+    <div class="checklist" id="checklist">
+      <div class="check-item" onclick="toggleCheck(this, 'visual', 25)">
+        <div class="check-box"></div>
+        <div class="check-label"><span>Photo de profil diamant</span><small>Fond noir, bijou en gros plan, lumière professionnelle — pas de selfie</small></div>
+        <div class="badge high">Impact fort</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this, 'bio', 20)">
+        <div class="check-box"></div>
+        <div class="check-label"><span>Nom optimisé SEO</span><small>Inclure "Bijoux", "Diamant", "Moissanite", "Paris" dans le nom du compte</small></div>
+        <div class="badge high">Impact fort</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this, 'bio', 15)">
+        <div class="check-box"></div>
+        <div class="check-label"><span>Bio 5 lignes convertissante</span><small>Ligne 1: Ce que tu fais | Ligne 2: Pour qui | Ligne 3: Preuves sociales | Ligne 4: Offre | Ligne 5: CTA + emoji ↓</small></div>
+        <div class="badge high">Impact fort</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this, 'bio', 10)">
+        <div class="check-box"></div>
+        <div class="check-label"><span>Lien en bio actif</span><small>Linktree ou page catalogue Rodier&Co avec formulaire de commande</small></div>
+        <div class="badge med">Essentiel</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this, 'hl', 15)">
+        <div class="check-box"></div>
+        <div class="check-label"><span>5 Highlights stratégiques</span><small>📦 Réalisations · ⭐ Avis clients · 💎 Catalogue · 📞 Commander · 🎬 Process</small></div>
+        <div class="badge med">Essentiel</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this, 'hl', 10)">
+        <div class="check-box"></div>
+        <div class="check-label"><span>Couvertures Highlights cohérentes</span><small>Icônes en or/diamant sur fond noir — identité Rodier&Co</small></div>
+        <div class="badge low">Bonus</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this, 'grid', 20)">
+        <div class="check-box"></div>
+        <div class="check-label"><span>Grille 3-3-3 organisée</span><small>3 colonnes: bijou seul · bijou porté · behind the scenes — alternance rigoureuse</small></div>
+        <div class="badge high">Impact fort</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this, 'grid', 15)">
+        <div class="check-box"></div>
+        <div class="check-label"><span>Palette visuelle fixe</span><small>Fond noir ou marbre blanc, lumière froide, couleurs or/argent/blanc uniquement</small></div>
+        <div class="badge med">Essentiel</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this, 'visual', 20)">
+        <div class="check-box"></div>
+        <div class="check-label"><span>Pin une vidéo de remise en main propre</span><small>Le "show-off" du produit livré = preuve sociale maximale</small></div>
+        <div class="badge high">Impact fort</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this, 'visual', 15)">
+        <div class="check-box"></div>
+        <div class="check-label"><span>Post épinglé = bestseller ou témoignage</span><small>Premier pin = preuve, 2ème = offre, 3ème = identité de marque</small></div>
+        <div class="badge med">Essentiel</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Générateur de bio</div>
+    <div class="bio-builder">
+      <div class="bio-line">
+        <input id="bio-emoji" type="text" placeholder="Emoji signature" value="💎" style="max-width:60px; text-align:center;">
+        <input id="bio-tagline" type="text" placeholder="Accroche (ex: Bijoux sur-mesure Paris)" value="Bijoux diamant & moissanite sur-mesure">
+      </div>
+      <div class="bio-line">
+        <input id="bio-proof" type="text" placeholder="Preuve sociale (ex: +200 pièces créées)" value="+200 pièces livrées · 5⭐">
+      </div>
+      <div class="bio-line">
+        <input id="bio-offer" type="text" placeholder="Offre ou spécialité" value="Bagues · Chaînes · Pendentifs custom">
+      </div>
+      <div class="bio-line">
+        <input id="bio-cta" type="text" placeholder="CTA (ex: Commande via DM ou lien ↓)" value="📩 DM pour devis gratuit ↓">
+      </div>
+      <button class="btn-sm btn-primary" onclick="generateBio()">Générer ma bio</button>
+      <div class="bio-preview" id="bio-preview">Votre bio apparaîtra ici…</div>
+      <button class="copy-btn" onclick="copyBio()">Copier la bio</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- TAB: CONTENT -->
+<div id="tab-content" class="section">
+
+  <div class="card">
+    <div class="card-title">Les 5 piliers de contenu Rodier&Co</div>
+    <div class="content-pillars" id="pillars">
+      <div class="pillar selected" onclick="selectPillar(this)" data-pillar="showcase">
+        <div class="pillar-icon">💎</div>
+        <div class="pillar-name">Showcase produit</div>
+        <div class="pillar-desc">Le bijou en vedette, close-up cinématique</div>
+      </div>
+      <div class="pillar" onclick="selectPillar(this)" data-pillar="social">
+        <div class="pillar-icon">⭐</div>
+        <div class="pillar-name">Preuve sociale</div>
+        <div class="pillar-desc">Témoignages, remises en main propre, réactions</div>
+      </div>
+      <div class="pillar" onclick="selectPillar(this)" data-pillar="bts">
+        <div class="pillar-icon">🔥</div>
+        <div class="pillar-name">Behind the scenes</div>
+        <div class="pillar-desc">Fabrication, processus, coulisses CEO</div>
+      </div>
+      <div class="pillar" onclick="selectPillar(this)" data-pillar="edu">
+        <div class="pillar-icon">💡</div>
+        <div class="pillar-name">Éducation valeur</div>
+        <div class="pillar-desc">Savoir-faire, différences produits, moissanite vs diamant</div>
+      </div>
+      <div class="pillar" onclick="selectPillar(this)" data-pillar="lifestyle">
+        <div class="pillar-icon">👑</div>
+        <div class="pillar-name">Lifestyle & identité</div>
+        <div class="pillar-desc">Vision Rodier&Co, mouvement, CEO life</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Hooks qui convertissent (à réutiliser)</div>
+    <div class="hook-list" id="hook-list">
+      <div class="hook-item" onclick="sendPrompt('Crée un Reel Instagram pour Rodier&Co basé sur ce hook: Ce bijou a changé la vie de mon client — je te montre comment')">
+        Ce bijou a changé la vie de mon client — je te montre comment <span>Reel 15s</span>
+      </div>
+      <div class="hook-item" onclick="sendPrompt('Crée un Reel Instagram pour Rodier&Co basé sur ce hook: Ce que les bijouteries classiques ne veulent pas que tu saches')">
+        Ce que les bijouteries classiques ne veulent pas que tu saches <span>Édu / viral</span>
+      </div>
+      <div class="hook-item" onclick="sendPrompt('Crée un Reel Instagram pour Rodier&Co basé sur ce hook: La commande la plus folle qu\'on a jamais faite chez Rodier&Co')">
+        La commande la plus folle qu'on a jamais faite chez Rodier&Co <span>Story-telling</span>
+      </div>
+      <div class="hook-item" onclick="sendPrompt('Crée un post Instagram pour Rodier&Co basé sur ce hook: Tu paies trop cher tes bijoux — voici pourquoi')">
+        Tu paies trop cher tes bijoux — voici pourquoi <span>Opinion / reach</span>
+      </div>
+      <div class="hook-item" onclick="sendPrompt('Crée un Reel Instagram pour Rodier&Co basé sur ce hook: J\'ai refusé cette commande de 3000€ — voilà pourquoi')">
+        J'ai refusé cette commande de 3000€ — voilà pourquoi <span>Curiosité</span>
+      </div>
+      <div class="hook-item" onclick="sendPrompt('Crée un post Instagram pour Rodier&Co basé sur ce hook: Moissanite vs Diamant — la vérité que personne ne dit')">
+        Moissanite vs Diamant — la vérité que personne ne dit <span>Comparatif</span>
+      </div>
+      <div class="hook-item" onclick="sendPrompt('Crée un Reel Instagram pour Rodier&Co basé sur ce hook: La réaction de mon client quand il a vu son bijou pour la première fois')">
+        La réaction de mon client quand il a vu son bijou pour la première fois <span>Émotion</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Hashtags Rodier&Co (cliquer pour copier le groupe)</div>
+    <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px;">Niche luxe · Bijoux Paris</div>
+    <div class="hashtag-cloud" id="hashtag-cloud">
+      <div class="hashtag core" onclick="copyHashtags('core')">#bijoux</div>
+      <div class="hashtag core" onclick="copyHashtags('core')">#bijouxparis</div>
+      <div class="hashtag core" onclick="copyHashtags('core')">#bijouxsurmesure</div>
+      <div class="hashtag core" onclick="copyHashtags('core')">#diamant</div>
+      <div class="hashtag core" onclick="copyHashtags('core')">#moissanite</div>
+      <div class="hashtag" onclick="copyHashtags('reach')">#luxuryjewelry</div>
+      <div class="hashtag" onclick="copyHashtags('reach')">#finejewelry</div>
+      <div class="hashtag" onclick="copyHashtags('reach')">#bijouterie</div>
+      <div class="hashtag" onclick="copyHashtags('reach')">#custombijoux</div>
+      <div class="hashtag" onclick="copyHashtags('reach')">#baguedamandesurmesure</div>
+      <div class="hashtag" onclick="copyHashtags('reach')">#collier925</div>
+      <div class="hashtag" onclick="copyHashtags('reach')">#argent925</div>
+      <div class="hashtag" onclick="copyHashtags('reach')">#bijouxluxe</div>
+      <div class="hashtag" onclick="copyHashtags('reach')">#jewelrydesign</div>
+      <div class="hashtag" onclick="copyHashtags('niche')">#moissanitejewelry</div>
+      <div class="hashtag" onclick="copyHashtags('niche')">#diamondring</div>
+      <div class="hashtag" onclick="copyHashtags('niche')">#bijouxfemme</div>
+      <div class="hashtag" onclick="copyHashtags('niche')">#bijouxhomme</div>
+      <div class="hashtag" onclick="copyHashtags('niche')">#cadeauluxe</div>
+      <div class="hashtag" onclick="copyHashtags('niche')">#parismode</div>
+    </div>
+    <button class="copy-btn" id="ht-copy-btn" onclick="copyAllHashtags()">Copier tous les hashtags</button>
+  </div>
+
+</div>
+
+<!-- TAB: FUNNEL -->
+<div id="tab-funnel" class="section">
+
+  <div class="card">
+    <div class="card-title">Funnel Instagram → Conversion</div>
+    <div class="funnel-steps">
+      <div class="funnel-step">
+        <div>
+          <div class="funnel-dot">1</div>
+          <div class="funnel-line" style="height: calc(100% - 30px)"></div>
+        </div>
+        <div class="funnel-content">
+          <h3>Attraction — Reel viral</h3>
+          <p>L'inconnu te découvre via un Reel. Hook fort + bijou sous lumière parfaite + son tendance. L'algorithme te booste si les 3 premières secondes retiennent l'attention.</p>
+          <ul>
+            <li>Reel 15-30s, hook oral + visuel simultané</li>
+            <li>Fin avec CTA doux : "Commente PRIX pour en savoir plus"</li>
+            <li>Musique trending ou son original signature</li>
+          </ul>
+        </div>
+      </div>
+      <div class="funnel-step">
+        <div>
+          <div class="funnel-dot">2</div>
+          <div class="funnel-line" style="height: calc(100% - 30px)"></div>
+        </div>
+        <div class="funnel-content">
+          <h3>Intérêt — Visite du profil</h3>
+          <p>Le prospect clique sur ton profil. Grille impeccable, bio claire, preuve sociale visible. En 5 secondes il doit comprendre : luxe, fiable, abordable sur-mesure.</p>
+          <ul>
+            <li>3 posts épinglés = meilleure réalisation, avis client, offre</li>
+            <li>Highlights = tout le parcours client en image</li>
+            <li>Nombre de followers = preuve de mouvement</li>
+          </ul>
+        </div>
+      </div>
+      <div class="funnel-step">
+        <div>
+          <div class="funnel-dot">3</div>
+          <div class="funnel-line" style="height: calc(100% - 30px)"></div>
+        </div>
+        <div class="funnel-content">
+          <h3>Désir — Story & DM warming</h3>
+          <p>Stories quotidiennes humanisent. Sondages, questions, polls créent de l'engagement. Le prospect glisse progressivement vers le DM.</p>
+          <ul>
+            <li>"Vous préférez or ou argent ?" → sondage story</li>
+            <li>Countdown avant drop de nouvelle pièce</li>
+            <li>Partager les DMs de compliments (avec permission)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="funnel-step">
+        <div>
+          <div class="funnel-dot">4</div>
+          <div class="funnel-line" style="height: calc(100% - 30px)"></div>
+        </div>
+        <div class="funnel-content">
+          <h3>Action — DM 1 question</h3>
+          <p>Approche directe, naturelle. Un message, une question. Jamais de pitch immédiat. Ouvre une conversation, laisse le prospect se projeter.</p>
+          <ul>
+            <li>"Frère, c'est pour offrir ou pour toi ?"</li>
+            <li>"T'as une préférence pour le métal ou on part sur custom ?"</li>
+            <li>Envoyer un extrait du catalogue personnalisé</li>
+          </ul>
+        </div>
+      </div>
+      <div class="funnel-step">
+        <div>
+          <div class="funnel-dot">5</div>
+        </div>
+        <div class="funnel-content">
+          <h3>Fidélisation — Suivi & réachat</h3>
+          <p>Après livraison, demande une story ou un avis. Un client satisfait = contenu gratuit + 3 recommandations. Le mouvement Rodier&Co se construit comme ça.</p>
+          <ul>
+            <li>Message post-livraison : "Frère, t'en penses quoi ?"</li>
+            <li>Offre de parrainage : -10% pour un ami amené</li>
+            <li>Repost des stories clients = preuve sociale gratuite</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Métriques à tracker</div>
+    <div class="grid-3" style="margin-bottom: 8px;">
+      <div class="metric-card"><div class="metric-val" id="m-reach">—</div><div class="metric-lbl">Reach semaine</div></div>
+      <div class="metric-card"><div class="metric-val" id="m-engage">—</div><div class="metric-lbl">Taux engagement</div></div>
+      <div class="metric-card"><div class="metric-val" id="m-dm">—</div><div class="metric-lbl">DMs entrants</div></div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <input type="number" id="inp-reach" placeholder="Reach" style="flex:1; font-size:13px; padding:7px 10px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); font-family: var(--font-sans);">
+      <input type="number" id="inp-engage" placeholder="Engagem." style="flex:1; font-size:13px; padding:7px 10px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); font-family: var(--font-sans);">
+      <input type="number" id="inp-dm" placeholder="DMs" style="flex:1; font-size:13px; padding:7px 10px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); font-family: var(--font-sans);">
+      <button class="btn-sm btn-primary" onclick="saveMetrics()">OK</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- TAB: AUTO-POST -->
+<div id="tab-auto" class="section">
+
+  <div class="card">
+    <div class="card-title">Planning viral recommandé</div>
+    <div class="posting-schedule">
+      <div class="sched-day"><div class="d-name">Lun</div><div class="d-slots"><div class="sched-slot slot-reel">Reel</div></div></div>
+      <div class="sched-day"><div class="d-name">Mar</div><div class="d-slots"><div class="sched-slot slot-story">Story</div></div></div>
+      <div class="sched-day"><div class="d-name">Mer</div><div class="d-slots"><div class="sched-slot slot-post">Post</div></div></div>
+      <div class="sched-day"><div class="d-name">Jeu</div><div class="d-slots"><div class="sched-slot slot-reel">Reel</div><div class="sched-slot slot-story">Story</div></div></div>
+      <div class="sched-day"><div class="d-name">Ven</div><div class="d-slots"><div class="sched-slot slot-post">Post</div></div></div>
+      <div class="sched-day"><div class="d-name">Sam</div><div class="d-slots"><div class="sched-slot slot-reel">Reel</div><div class="sched-slot slot-story">Story</div></div></div>
+      <div class="sched-day"><div class="d-name">Dim</div><div class="d-slots"><div class="sched-slot slot-story">Story</div></div></div>
+    </div>
+    <div style="font-size: 11px; color: var(--color-text-secondary); margin-top: 8px; display: flex; gap: 12px; flex-wrap: wrap;">
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--color-background-danger);margin-right:3px;"></span>Reel = portée maximum</span>
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--color-background-info);margin-right:3px;"></span>Post = profil + SEO</span>
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--color-background-warning);margin-right:3px;"></span>Story = engagement quotidien</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Horaires d'or (audience bijoux luxe)</div>
+    <div class="score-bar">
+      <div class="bar-row"><div class="bar-label">Lun–Mer 11h–13h</div><div class="bar-track"><div class="bar-fill" style="width:65%"></div></div><div class="bar-val">65%</div></div>
+      <div class="bar-row"><div class="bar-label">Jeu–Ven 18h–20h</div><div class="bar-track"><div class="bar-fill" style="width:90%"></div></div><div class="bar-val">90%</div></div>
+      <div class="bar-row"><div class="bar-label">Sam 10h–12h</div><div class="bar-track"><div class="bar-fill" style="width:80%"></div></div><div class="bar-val">80%</div></div>
+      <div class="bar-row"><div class="bar-label">Dim 19h–21h</div><div class="bar-track"><div class="bar-fill" style="width:75%"></div></div><div class="bar-val">75%</div></div>
+    </div>
+    <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 8px;">Objectif : poster dans les 30 min avant les pics → l'algorithme capte l'engagement initial et propulse le post</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Stratégie Stories quotidiennes</div>
+    <div class="checklist">
+      <div class="check-item" onclick="toggleCheck(this, null, 0)">
+        <div class="check-box"></div>
+        <div class="check-label"><span>Story matin : teaser du jour</span><small>"Ce soir je montre quelque chose de fou…" + compte à rebours</small></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this, null, 0)">
+        <div class="check-box"></div>
+        <div class="check-label"><span>Story midi : contenu valeur</span><small>Astuce bijou / behind-the-scenes / close-up matière</small></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this, null, 0)">
+        <div class="check-box"></div>
+        <div class="check-label"><span>Story soir : social proof</span><small>Repost avis client, livraison du jour, ou DM compliment</small></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this, null, 0)">
+        <div class="check-box"></div>
+        <div class="check-label"><span>Sondage hebdo</span><small>"Vous préférez X ou Y ?" → données + engagement + idée de contenu</small></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TAB: IA CREATEUR -->
+<div id="tab-ia" class="section">
+  <div class="card">
+    <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+      Générateur de contenu IA
+      <span class="ai-indicator"><span class="pulse"></span>Claude intégré</span>
+    </div>
+    <div class="post-generator">
+      <div style="font-size: 13px; font-weight: 500; margin-bottom: 4px;">Type de contenu</div>
+      <div class="topic-chips" id="format-chips">
+        <div class="chip selected" onclick="selectChip(this, 'format')" data-val="reel">Reel caption</div>
+        <div class="chip" onclick="selectChip(this, 'format')" data-val="post">Post carousel</div>
+        <div class="chip" onclick="selectChip(this, 'format')" data-val="story">Story sequence</div>
+        <div class="chip" onclick="selectChip(this, 'format')" data-val="dm">DM relance</div>
+        <div class="chip" onclick="selectChip(this, 'format')" data-val="bio">Bio optimisée</div>
+      </div>
+      <div style="font-size: 13px; font-weight: 500; margin-top: 4px; margin-bottom: 4px;">Pilier</div>
+      <div class="topic-chips" id="pilier-chips">
+        <div class="chip selected" onclick="selectChip(this, 'pilier')" data-val="showcase">Showcase produit</div>
+        <div class="chip" onclick="selectChip(this, 'pilier')" data-val="social">Preuve sociale</div>
+        <div class="chip" onclick="selectChip(this, 'pilier')" data-val="bts">Behind scenes</div>
+        <div class="chip" onclick="selectChip(this, 'pilier')" data-val="edu">Éducation</div>
+        <div class="chip" onclick="selectChip(this, 'pilier')" data-val="lifestyle">Lifestyle CEO</div>
+      </div>
+      <div style="font-size: 13px; font-weight: 500; margin-top: 4px; margin-bottom: 4px;">Contexte (optionnel)</div>
+      <input type="text" id="context-input" placeholder="Ex: bague moissanite 2 carats livrée ce matin à Paris" style="width:100%; font-size:13px; padding:9px 12px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); font-family: var(--font-sans);">
+      <button class="btn-sm btn-primary" onclick="generateContent()" id="gen-btn">Générer avec Claude ↗</button>
+      <div class="generated-post" id="gen-post">Votre contenu apparaîtra ici…</div>
+      <button class="copy-btn" id="copy-gen-btn" style="display:none" onclick="copyGen()">Copier le contenu</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Idées de contenu viral (30 jours)</div>
+    <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px;">Clique sur une idée pour la développer avec Claude</div>
+    <div class="hook-list">
+      <div class="hook-item" onclick="sendPrompt('Développe ce concept de contenu Instagram pour Rodier&Co : POV : tu commandes un bijou custom chez nous — montre tout le process de A à Z en Reel')">POV : commande custom de A à Z <span>Série Reel</span></div>
+      <div class="hook-item" onclick="sendPrompt('Développe ce concept de contenu Instagram pour Rodier&Co : Comparaison live moissanite vs diamant naturel — même taille, même monture, montrer la différence et le prix')">Moissanite vs Diamant — comparaison live <span>Éducatif viral</span></div>
+      <div class="hook-item" onclick="sendPrompt('Développe ce concept de contenu Instagram pour Rodier&Co : Ce bijou vendu 5000€ ailleurs, prix chez Rodier&Co — révélation live en story')">Prix choc vs concurrence <span>Viral / reach</span></div>
+      <div class="hook-item" onclick="sendPrompt('Développe ce concept de contenu Instagram pour Rodier&Co : Série \"Ma commande du jour\" — chaque matin poster la commande en cours avec son histoire')">Série Ma commande du jour <span>Engagement daily</span></div>
+      <div class="hook-item" onclick="sendPrompt('Développe ce concept de contenu Instagram pour Rodier&Co : \"Devinez le prix\" — montrer un bijou, laisser les gens deviner en commentaires, révéler en story')">Jeu Devinez le prix <span>Commentaires x10</span></div>
+      <div class="hook-item" onclick="sendPrompt('Développe ce concept de contenu Instagram pour Rodier&Co : Réaction client filmée à la remise en main propre — le moment magique')">Réaction remise en main propre <span>Émotion = partages</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let checks = {};
+let checkCounts = { visual: 0, bio: 0, hl: 0, grid: 0 };
+let checkMax = { visual: 60, bio: 45, hl: 25, grid: 35 };
+let selectedFormat = 'reel';
+let selectedPilier = 'showcase';
+
+function showTab(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function toggleCheck(el, category, points) {
+  const box = el.querySelector('.check-box');
+  const id = el.textContent.slice(0, 20);
+  if (!checks[id]) {
+    checks[id] = true;
+    box.classList.add('done');
+    if (category) checkCounts[category] = Math.min(checkMax[category], checkCounts[category] + points);
+  } else {
+    checks[id] = false;
+    box.classList.remove('done');
+    if (category) checkCounts[category] = Math.max(0, checkCounts[category] - points);
+  }
+  updateScore();
+}
+
+function updateScore() {
+  const total = Object.values(checkCounts).reduce((a, b) => a + b, 0);
+  const max = Object.values(checkMax).reduce((a, b) => a + b, 0);
+  const pct = Math.round((total / max) * 100);
+  const circumference = 188.5;
+  const offset = circumference - (pct / 100) * circumference;
+  document.getElementById('score-circle').style.strokeDashoffset = offset;
+  document.getElementById('score-text').textContent = pct + '%';
+  const labels = ['Profil basique', 'En construction', 'Bon profil', 'Profil fort', 'Profil viral'];
+  const idx = Math.min(4, Math.floor(pct / 20));
+  document.querySelector('.score-ring-text h2').textContent = labels[idx];
+
+  const cats = ['visual', 'bio', 'hl', 'grid'];
+  const barIds = ['visual', 'bio', 'hl', 'grid'];
+  cats.forEach(c => {
+    const p = Math.round((checkCounts[c] / checkMax[c]) * 100);
+    document.getElementById('bar-' + c).style.width = p + '%';
+    document.getElementById('bv-' + c).textContent = p + '%';
+  });
+}
+
+function generateBio() {
+  const em = document.getElementById('bio-emoji').value;
+  const tag = document.getElementById('bio-tagline').value;
+  const proof = document.getElementById('bio-proof').value;
+  const offer = document.getElementById('bio-offer').value;
+  const cta = document.getElementById('bio-cta').value;
+  const bio = `${em} ${tag}\n${proof}\n✨ ${offer}\n\n${cta}`;
+  document.getElementById('bio-preview').textContent = bio;
+}
+
+function copyBio() {
+  const text = document.getElementById('bio-preview').textContent;
+  if (text && text !== 'Votre bio apparaîtra ici…') {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = event.target;
+      btn.textContent = 'Copié !';
+      setTimeout(() => btn.textContent = 'Copier la bio', 1500);
+    });
+  }
+}
+
+function selectPillar(el) {
+  document.querySelectorAll('.pillar').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function copyHashtags(group) {
+  const sets = {
+    core: '#bijoux #bijouxparis #bijouxsurmesure #diamant #moissanite #rodierco',
+    reach: '#luxuryjewelry #finejewelry #bijouterie #custombijoux #baguedamandesurmesure #collier925 #argent925 #bijouxluxe #jewelrydesign',
+    niche: '#moissanitejewelry #diamondring #bijouxfemme #bijouxhomme #cadeauluxe #parismode'
+  };
+  navigator.clipboard.writeText(sets[group]).then(() => {
+    document.getElementById('ht-copy-btn').textContent = 'Copié !';
+    setTimeout(() => document.getElementById('ht-copy-btn').textContent = 'Copier tous les hashtags', 1500);
+  });
+}
+
+function copyAllHashtags() {
+  const all = '#bijoux #bijouxparis #bijouxsurmesure #diamant #moissanite #rodierco #luxuryjewelry #finejewelry #bijouterie #custombijoux #baguedamandesurmesure #collier925 #argent925 #bijouxluxe #jewelrydesign #moissanitejewelry #diamondring #bijouxfemme #bijouxhomme #cadeauluxe #parismode';
+  navigator.clipboard.writeText(all).then(() => {
+    const btn = document.getElementById('ht-copy-btn');
+    btn.textContent = 'Copié !';
+    setTimeout(() => btn.textContent = 'Copier tous les hashtags', 1500);
+  });
+}
+
+function saveMetrics() {
+  const r = document.getElementById('inp-reach').value;
+  const e = document.getElementById('inp-engage').value;
+  const d = document.getElementById('inp-dm').value;
+  if (r) document.getElementById('m-reach').textContent = parseInt(r).toLocaleString('fr');
+  if (e) document.getElementById('m-engage').textContent = parseFloat(e).toFixed(1) + '%';
+  if (d) document.getElementById('m-dm').textContent = d;
+}
+
+function selectChip(el, group) {
+  document.querySelectorAll(`#${group}-chips .chip`).forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  if (group === 'format') selectedFormat = el.dataset.val;
+  if (group === 'pilier') selectedPilier = el.dataset.val;
+}
+
+async function generateContent() {
+  const btn = document.getElementById('gen-btn');
+  const out = document.getElementById('gen-post');
+  const ctx = document.getElementById('context-input').value;
+
+  const formatLabels = { reel: 'caption de Reel Instagram', post: 'texte de post carousel Instagram', story: 'séquence de 5 stories Instagram', dm: 'message DM de relance prospect', bio: 'bio de profil Instagram optimisée' };
+  const pilierLabels = { showcase: 'mise en valeur du produit bijou', social: 'preuve sociale et témoignage client', bts: 'behind the scenes fabrication bijou', edu: 'éducation sur les bijoux et matières', lifestyle: 'lifestyle CEO et identité de marque Rodier&Co' };
+
+  const prompt = `Tu es le copywriter Instagram de Rodier&Co, une marque de bijoux luxe sur-mesure à Paris (diamant, moissanite, argent 925). Le style est direct, authentique, parisien, avec une touche de street culture luxe. Le fondateur s'appelle Hassan.
+
+Crée un ${formatLabels[selectedFormat]} pour le pilier "${pilierLabels[selectedPilier]}".
+${ctx ? `Contexte supplémentaire : ${ctx}` : ''}
+
+Règles :
+- Hook ultra-fort sur la première ligne (curiosité ou émotion)
+- Ton naturel, proche, jamais corporate
+- Appel à l'action clair à la fin
+- Pour Reels et posts : inclure 3-5 hashtags pertinents à la fin
+- Max 150 mots pour captions Reel, max 80 mots par slide pour carousel
+- Pour DM : ton "Frère" naturel, une seule question ouverte
+
+Génère le contenu maintenant, sans introduction, directement le texte prêt à copier-coller.`;
+
+  btn.textContent = 'Génération en cours…';
+  btn.disabled = true;
+  out.style.display = 'block';
+  out.textContent = '✦ Claude réfléchit…';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.find(b => b.type === 'text')?.text || 'Erreur de génération.';
+    out.textContent = text;
+    document.getElementById('copy-gen-btn').style.display = 'inline-block';
+  } catch (e) {
+    out.textContent = 'Erreur réseau. Réessaie.';
+  }
+
+  btn.textContent = 'Générer avec Claude ↗';
+  btn.disabled = false;
+}
+
+function copyGen() {
+  const text = document.getElementById('gen-post').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-gen-btn');
+    btn.textContent = 'Copié !';
+    setTimeout(() => btn.textContent = 'Copier le contenu', 1500);
+  });
+}
+</script>

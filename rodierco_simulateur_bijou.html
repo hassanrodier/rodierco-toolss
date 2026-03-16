@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rodier&Co — Configurateur sur-mesure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Mono',monospace;background:#0d0d0b;color:#e8e4dc;min-height:100vh}
+:root{
+  --gold:#c9a96e;--gold-light:#e8d5a3;--gold-dim:rgba(201,169,110,0.15);
+  --bg:#0d0d0b;--bg2:#161614;--bg3:#1c1c19;
+  --border:rgba(201,169,110,0.15);--border-hi:rgba(201,169,110,0.45);
+  --text:#e8e4dc;--muted:#6a6860;
+}
+.app{max-width:680px;margin:0 auto;background:var(--bg);min-height:100vh}
+
+.hdr{text-align:center;padding:1.75rem 1.25rem 1.25rem;border-bottom:0.5px solid var(--border)}
+.hdr-brand{font-size:9px;letter-spacing:0.4em;text-transform:uppercase;color:var(--gold);margin-bottom:7px}
+.hdr-title{font-family:'Cormorant Garamond',serif;font-size:25px;font-weight:300;color:#fff;letter-spacing:0.04em;line-height:1.2}
+.hdr-sub{font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-top:5px}
+
+.progress{display:flex;align-items:flex-start;justify-content:center;padding:1.1rem 1rem;border-bottom:0.5px solid var(--border)}
+.prog-step{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;max-width:80px}
+.prog-dot{width:26px;height:26px;border-radius:50%;border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--muted);transition:all 0.3s}
+.prog-dot.active{border-color:var(--gold);color:var(--gold)}
+.prog-dot.done{border-color:var(--gold);background:var(--gold-dim);color:var(--gold);font-size:10px;font-family:'DM Mono',monospace}
+.prog-label{font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);transition:color 0.3s;text-align:center}
+.prog-label.active{color:var(--gold)}
+.prog-line{height:0.5px;flex:1;background:var(--border);margin-top:13px;transition:background 0.3s;max-width:32px}
+.prog-line.done{background:rgba(201,169,110,0.4)}
+
+.preview{display:none;align-items:center;gap:1rem;padding:0.9rem 1.25rem;border-bottom:0.5px solid var(--border);background:var(--bg2)}
+.jewel-wrap{width:72px;height:72px;flex-shrink:0}
+.jewel-wrap svg{width:100%;height:100%}
+.prev-name{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:300;color:#fff;margin-bottom:3px}
+.prev-details{font-size:9px;color:var(--muted);letter-spacing:0.07em;line-height:1.7}
+.prev-details b{color:rgba(201,169,110,0.7);font-weight:400}
+
+.panel{display:none;padding:1.4rem 1.25rem}
+.panel.active{display:block}
+.panel-q{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:#fff;margin-bottom:3px}
+.panel-hint{font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1.1rem}
+
+.opt-grid{display:grid;gap:9px}
+.g2{grid-template-columns:1fr 1fr}
+.opt{border:0.5px solid var(--border);border-radius:10px;padding:13px 11px;cursor:pointer;background:transparent;color:var(--text);font-family:'DM Mono',monospace;text-align:left;transition:all 0.2s;width:100%}
+.opt:hover{border-color:var(--border-hi);background:rgba(201,169,110,0.04)}
+.opt.sel{border-color:var(--gold);background:var(--gold-dim)}
+.opt-icon{font-size:20px;margin-bottom:7px;display:block}
+.opt-name{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:400;color:#fff;display:block;margin-bottom:2px}
+.opt-desc{font-size:9px;color:var(--muted);letter-spacing:0.05em;display:block;line-height:1.5}
+.opt-badge{display:inline-block;margin-top:4px;font-size:8px;padding:2px 7px;border-radius:99px;background:rgba(201,169,110,0.12);color:var(--gold);letter-spacing:0.08em;font-family:'DM Mono',monospace}
+
+.metal-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.metal-opt{border:0.5px solid var(--border);border-radius:10px;padding:13px 11px;cursor:pointer;background:transparent;text-align:center;transition:all 0.2s;width:100%;font-family:'DM Mono',monospace}
+.metal-opt:hover{border-color:var(--border-hi);background:rgba(201,169,110,0.04)}
+.metal-opt.sel{border-color:var(--gold);background:var(--gold-dim)}
+.swatch{width:34px;height:34px;border-radius:50%;margin:0 auto 7px;border:1.5px solid transparent}
+.metal-name{font-family:'Cormorant Garamond',serif;font-size:14px;color:#fff;display:block;margin-bottom:2px}
+.metal-sub{font-size:9px;color:var(--muted);letter-spacing:0.05em;display:block}
+
+.occ-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.1rem}
+.occ-btn{border:0.5px solid var(--border);border-radius:9px;padding:11px 10px;cursor:pointer;background:transparent;text-align:left;font-family:'DM Mono',monospace;color:var(--text);transition:all 0.2s;width:100%}
+.occ-btn:hover{border-color:var(--border-hi);background:rgba(201,169,110,0.04)}
+.occ-btn.sel{border-color:var(--gold);background:var(--gold-dim)}
+.occ-icon{font-size:16px;display:block;margin-bottom:4px}
+.occ-name{font-family:'Cormorant Garamond',serif;font-size:13px;color:#fff;display:block}
+
+.upload-label{font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:9px;display:block}
+.upload-zone{border:0.5px dashed var(--border-hi);border-radius:10px;padding:20px 16px;text-align:center;cursor:pointer;transition:all 0.2s;background:transparent;position:relative}
+.upload-zone:hover{background:rgba(201,169,110,0.04);border-color:var(--gold)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:22px;margin-bottom:6px;display:block}
+.upload-text{font-size:11px;color:var(--muted);display:block;line-height:1.6}
+.upload-text b{color:var(--gold);font-weight:400}
+.upload-previews{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.upload-thumb{width:62px;height:62px;border-radius:7px;border:0.5px solid var(--border);position:relative;display:inline-block}
+.upload-thumb img{width:100%;height:100%;object-fit:cover;border-radius:6px;display:block}
+.del-thumb{position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:50%;background:var(--bg);border:0.5px solid var(--border-hi);font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);line-height:1}
+.note-area{width:100%;margin-top:9px;background:var(--bg2);border:0.5px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Cormorant Garamond',serif;font-size:14px;color:#fff;outline:none;resize:none;line-height:1.6;transition:border-color 0.2s;min-height:70px}
+.note-area::placeholder{color:var(--muted);font-style:italic}
+.note-area:focus{border-color:var(--border-hi)}
+.divider{height:0.5px;background:var(--border);margin:1.1rem 0}
+
+.recap{padding:1.4rem 1.25rem}
+.recap-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:#fff;margin-bottom:1.1rem}
+.recap-rows{border:0.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1rem}
+.recap-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:0.5px solid var(--border)}
+.recap-row:last-child{border-bottom:none}
+.rk{font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)}
+.rv{font-family:'Cormorant Garamond',serif;font-size:14px;color:#fff;text-align:right;max-width:55%}
+.inspi-row{align-items:flex-start;padding:10px 14px}
+.inspi-thumbs{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.inspi-thumb{width:36px;height:36px;border-radius:5px;object-fit:cover;border:0.5px solid var(--border)}
+
+.devis-badge{background:var(--bg3);border:0.5px solid var(--border-hi);border-radius:10px;padding:14px 16px;margin-bottom:1rem;text-align:center}
+.devis-val{font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--gold);font-style:italic;margin-bottom:3px}
+.devis-sub{font-size:9px;color:var(--muted);line-height:1.5;letter-spacing:0.05em}
+
+.ai-box{background:var(--bg3);border:0.5px solid var(--border);border-radius:10px;padding:13px;margin-bottom:1rem;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;line-height:1.8;color:rgba(232,228,220,0.85);display:none}
+.ai-box.show{display:block}
+.ai-btn{width:100%;padding:10px;background:transparent;border:0.5px solid var(--border);border-radius:8px;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);cursor:pointer;font-family:'DM Mono',monospace;transition:all 0.2s;margin-bottom:1rem}
+.ai-btn:hover{border-color:var(--border-hi);color:var(--text)}
+
+.cta-dm{width:100%;padding:13px;background:transparent;border:0.5px solid var(--gold);border-radius:8px;font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold);cursor:pointer;letter-spacing:0.06em;transition:all 0.2s;margin-bottom:8px;display:block}
+.cta-dm:hover{background:var(--gold-dim)}
+.cta-reset{width:100%;padding:10px;background:transparent;border:0.5px solid var(--border);border-radius:8px;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);cursor:pointer;font-family:'DM Mono',monospace;transition:all 0.2s}
+.cta-reset:hover{border-color:var(--border-hi);color:var(--text)}
+.copied-msg{text-align:center;font-size:10px;color:var(--gold);padding:6px 0;display:none}
+.copied-msg.show{display:block}
+
+.nav{display:flex;gap:8px;padding:1rem 1.25rem;border-top:0.5px solid var(--border)}
+.btn-back{padding:10px 16px;background:transparent;border:0.5px solid var(--border);border-radius:8px;font-size:10px;color:var(--muted);cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:0.06em;transition:all 0.2s}
+.btn-back:hover{border-color:var(--border-hi);color:var(--text)}
+.btn-cont{flex:1;padding:11px;background:var(--gold);border:none;border-radius:8px;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#000;cursor:pointer;font-family:'DM Mono',monospace;transition:opacity 0.2s;opacity:0.35;pointer-events:none}
+.btn-cont.ready{opacity:1;pointer-events:all}
+.btn-cont.ready:hover{opacity:0.85}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.panel.active,.recap{animation:fadeIn 0.25s ease}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="hdr">
+  <div class="hdr-brand">Rodier &amp; Co · Paris</div>
+  <div class="hdr-title">Configurez votre<br>bijou sur-mesure</div>
+  <div class="hdr-sub">4 étapes · Devis gratuit sous 24h</div>
+</div>
+
+<div class="progress">
+  <div class="prog-step"><div class="prog-dot active" id="pd0"><span>1</span></div><div class="prog-label active" id="pl0">Type</div></div>
+  <div class="prog-line" id="pline0"></div>
+  <div class="prog-step"><div class="prog-dot" id="pd1"><span>2</span></div><div class="prog-label" id="pl1">Métal</div></div>
+  <div class="prog-line" id="pline1"></div>
+  <div class="prog-step"><div class="prog-dot" id="pd2"><span>3</span></div><div class="prog-label" id="pl2">Pierre</div></div>
+  <div class="prog-line" id="pline2"></div>
+  <div class="prog-step"><div class="prog-dot" id="pd3"><span>4</span></div><div class="prog-label" id="pl3">Inspirations</div></div>
+</div>
+
+<div class="preview" id="preview">
+  <div class="jewel-wrap" id="jewel-wrap"></div>
+  <div>
+    <div class="prev-name" id="prev-name">—</div>
+    <div class="prev-details" id="prev-details"></div>
+  </div>
+</div>
+
+<!-- STEP 0: TYPE -->
+<div class="panel active" id="panel-0">
+  <div class="panel-q">Quel bijou souhaitez-vous ?</div>
+  <div class="panel-hint">Type de pièce</div>
+  <div class="opt-grid g2">
+    <button class="opt" onclick="pick('type','bague',this)"><span class="opt-icon">💍</span><span class="opt-name">Bague</span><span class="opt-desc">Solitaire · Alliance · Chevalière</span></button>
+    <button class="opt" onclick="pick('type','collier',this)"><span class="opt-icon">📿</span><span class="opt-name">Collier</span><span class="opt-desc">Pendentif · Chaîne · Sur-mesure</span></button>
+    <button class="opt" onclick="pick('type','bracelet',this)"><span class="opt-icon">⛓</span><span class="opt-name">Bracelet</span><span class="opt-desc">Jonc · Chaîne · Manchette</span></button>
+    <button class="opt" onclick="pick('type','boucles',this)"><span class="opt-icon">✨</span><span class="opt-name">Boucles d'oreilles</span><span class="opt-desc">Puces · Créoles · Pendantes</span></button>
+  </div>
+</div>
+
+<!-- STEP 1: MÉTAL -->
+<div class="panel" id="panel-1">
+  <div class="panel-q">Quel métal ?</div>
+  <div class="panel-hint">La matière de votre pièce</div>
+  <div class="metal-grid">
+    <button class="metal-opt" onclick="pick('metal','argent',this)">
+      <div class="swatch" style="background:linear-gradient(135deg,#f0f0f0,#a8a8a8);border-color:#c8c8c8"></div>
+      <span class="metal-name">Argent 925</span><span class="metal-sub">Rhodié · Brossé · Poli</span>
+    </button>
+    <button class="metal-opt" onclick="pick('metal','or-jaune',this)">
+      <div class="swatch" style="background:linear-gradient(135deg,#f8e060,#c89818);border-color:#e8c030"></div>
+      <span class="metal-name">Or jaune 18K</span><span class="metal-sub">Classique · Intemporel</span>
+    </button>
+    <button class="metal-opt" onclick="pick('metal','or-blanc',this)">
+      <div class="swatch" style="background:linear-gradient(135deg,#f0f0f8,#c0c0d8);border-color:#d8d8e8"></div>
+      <span class="metal-name">Or blanc 18K</span><span class="metal-sub">Moderne · Épuré</span>
+    </button>
+    <button class="metal-opt" onclick="pick('metal','or-rose',this)">
+      <div class="swatch" style="background:linear-gradient(135deg,#f0c0a0,#c87858);border-color:#e0a878"></div>
+      <span class="metal-name">Or rose 18K</span><span class="metal-sub">Romantique · Tendance</span>
+    </button>
+  </div>
+</div>
+
+<!-- STEP 2: PIERRE -->
+<div class="panel" id="panel-2">
+  <div class="panel-q">Quelle pierre ?</div>
+  <div class="panel-hint">La pierre centrale</div>
+  <div class="opt-grid g2">
+    <button class="opt" onclick="pick('pierre','zirconium',this)">
+      <span class="opt-icon">🔷</span>
+      <span class="opt-name">Zirconium</span>
+      <span class="opt-desc">Éclat vif · Accessible · Idéal pour des pièces élégantes</span>
+    </button>
+    <button class="opt" onclick="pick('pierre','moissanite',this)">
+      <span class="opt-icon">💎</span>
+      <span class="opt-name">Moissanite</span>
+      <span class="opt-desc">Éclat supérieur au diamant · Éco-responsable</span>
+      <span class="opt-badge">Certificat GRA inclus</span>
+    </button>
+    <button class="opt" onclick="pick('pierre','diamant',this)">
+      <span class="opt-icon">◇</span>
+      <span class="opt-name">Diamant</span>
+      <span class="opt-desc">Naturel ou Lab-grown · Le summum du luxe</span>
+      <span class="opt-badge">Certificat GIA / IGI inclus</span>
+    </button>
+    <button class="opt" onclick="pick('pierre','sans',this)">
+      <span class="opt-icon">○</span>
+      <span class="opt-name">Sans pierre</span>
+      <span class="opt-desc">Métal seul · Gravure · Design épuré</span>
+    </button>
+  </div>
+</div>
+
+<!-- STEP 3: INSPIRATIONS -->
+<div class="panel" id="panel-3">
+  <div class="panel-q">Partagez vos inspirations</div>
+  <div class="panel-hint">Pour quelle occasion &amp; vos références visuelles</div>
+
+  <span class="upload-label">Pour quelle occasion ?</span>
+  <div class="occ-grid" id="occ-grid">
+    <button class="occ-btn" onclick="pickOcc(this,'fiançailles')"><span class="occ-icon">💍</span><span class="occ-name">Fiançailles</span></button>
+    <button class="occ-btn" onclick="pickOcc(this,'cadeau')"><span class="occ-icon">🎁</span><span class="occ-name">Cadeau</span></button>
+    <button class="occ-btn" onclick="pickOcc(this,'réussite')"><span class="occ-icon">🏆</span><span class="occ-name">Réussite personnelle</span></button>
+    <button class="occ-btn" onclick="pickOcc(this,'souvenir')"><span class="occ-icon">🕊️</span><span class="occ-name">Souvenir / Mémoire</span></button>
+    <button class="occ-btn" onclick="pickOcc(this,'anniversaire')"><span class="occ-icon">🥂</span><span class="occ-name">Anniversaire</span></button>
+    <button class="occ-btn" onclick="pickOcc(this,'autre')"><span class="occ-icon">✦</span><span class="occ-name">Autre</span></button>
+  </div>
+
+  <div class="divider"></div>
+
+  <span class="upload-label">Vos inspirations (logos, croquis, photos) — optionnel</span>
+  <div class="upload-zone" id="upload-zone">
+    <input type="file" accept="image/*" multiple id="file-input" onchange="handleFiles(this.files)">
+    <span class="upload-icon">🖼</span>
+    <span class="upload-text" id="upload-text">Glissez vos images ici ou <b>parcourir</b><br>JPG, PNG, GIF · Max 5 fichiers</span>
+  </div>
+  <div class="upload-previews" id="upload-previews"></div>
+
+  <div class="divider"></div>
+
+  <span class="upload-label">Notes supplémentaires — optionnel</span>
+  <textarea class="note-area" id="note-area" rows="3" placeholder="Décrivez votre vision, vos attentes, des détails particuliers…"></textarea>
+</div>
+
+<!-- RECAP -->
+<div id="recap-zone" style="display:none">
+  <div class="recap">
+    <div class="recap-title">Votre configuration</div>
+    <div class="recap-rows" id="recap-rows"></div>
+
+    <div class="devis-badge">
+      <div class="devis-val">Sur devis personnalisé</div>
+      <div class="devis-sub">Le prix final dépend des carats, de la finition et de la complexité<br>Devis précis sous 24h après échange avec Hassan</div>
+    </div>
+
+    <button class="ai-btn" id="ai-btn" onclick="genDesc()">✦ Générer la description poétique de mon bijou</button>
+    <div class="ai-box" id="ai-box"></div>
+
+    <button class="cta-dm" onclick="copyDM()">📩 Copier mon message DM</button>
+    <div class="copied-msg" id="copied-msg">✓ Message copié — colle-le dans ton DM Instagram @rodierco</div>
+    <button class="cta-reset" onclick="reset()">← Recommencer la configuration</button>
+  </div>
+</div>
+
+<div class="nav" id="nav-bar">
+  <button class="btn-back" id="btn-back" onclick="back()" style="display:none">← Retour</button>
+  <button class="btn-cont" id="btn-cont" onclick="next()">Continuer →</button>
+</div>
+
+</div>
+
+<script>
+const state={type:null,metal:null,pierre:null,occasion:null,note:'',files:[],step:0};
+const NAMES={
+  type:{bague:'Bague',collier:'Collier',bracelet:'Bracelet',boucles:"Boucles d'oreilles"},
+  metal:{argent:'Argent 925','or-jaune':'Or jaune 18K','or-blanc':'Or blanc 18K','or-rose':'Or rose 18K'},
+  pierre:{zirconium:'Zirconium',moissanite:'Moissanite',diamant:'Diamant',sans:'Sans pierre'},
+  occasion:{fiançailles:'Fiançailles',cadeau:'Cadeau',réussite:'Réussite personnelle',souvenir:'Souvenir / Mémoire',anniversaire:'Anniversaire',autre:'Autre'}
+};
+const METAL_C={
+  argent:{f:'#d8d8d8',s:'#a0a0a0',sh:'#f0f0f0'},
+  'or-jaune':{f:'#e8c030',s:'#a88000',sh:'#f8e870'},
+  'or-blanc':{f:'#d0d0e0',s:'#9090b0',sh:'#f0f0f8'},
+  'or-rose':{f:'#d89060',s:'#a05030',sh:'#f0b888'}
+};
+const PIERRE_C={zirconium:'#b8e8ff',moissanite:'#c8f4ff',diamant:'#e8f8ff',sans:null};
+
+function pick(key,val,btn){
+  state[key]=val;
+  btn.closest('.opt-grid,.metal-grid').querySelectorAll('button').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  document.getElementById('btn-cont').classList.add('ready');
+  updatePreview();
+}
+function pickOcc(btn,val){
+  state.occasion=val;
+  document.getElementById('occ-grid').querySelectorAll('button').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  document.getElementById('btn-cont').classList.add('ready');
+}
+function updatePreview(){
+  const hasAny=state.type||state.metal||state.pierre;
+  document.getElementById('preview').style.display=hasAny?'flex':'none';
+  const parts=[];
+  if(state.type)parts.push(NAMES.type[state.type]);
+  if(state.metal)parts.push(NAMES.metal[state.metal]);
+  if(state.pierre)parts.push(NAMES.pierre[state.pierre]);
+  document.getElementById('prev-name').textContent=parts[0]||'—';
+  document.getElementById('prev-details').innerHTML=parts.slice(1).map(s=>`<b>${s}</b>`).join(' · ');
+  drawJewel();
+}
+function drawJewel(){
+  const mc=METAL_C[state.metal]||{f:'#2e2e28',s:'#1e1e18',sh:'#4e4e40'};
+  const pc=state.pierre?PIERRE_C[state.pierre]:null;
+  const t=state.type;
+  const id=Math.random().toString(36).slice(2,6);
+  const defs=`<defs><radialGradient id="mg${id}" cx="38%" cy="32%"><stop offset="0%" stop-color="${mc.sh}"/><stop offset="100%" stop-color="${mc.s}"/></radialGradient>${pc?`<radialGradient id="pg${id}" cx="32%" cy="28%"><stop offset="0%" stop-color="#fff"/><stop offset="35%" stop-color="${pc}"/><stop offset="100%" stop-color="${pc}" stop-opacity="0.55"/></radialGradient>`:''}</defs>`;
+  let svg='';
+  if(t==='bague'){svg=`<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">${defs}<ellipse cx="40" cy="54" rx="22" ry="10" fill="none" stroke="url(#mg${id})" stroke-width="7"/><ellipse cx="40" cy="54" rx="22" ry="10" fill="none" stroke="${mc.sh}" stroke-width="0.8" opacity="0.4"/>${pc?`<polygon points="40,14 51,25 48,39 32,39 29,25" fill="url(#pg${id})" stroke="${mc.s}" stroke-width="0.8"/><rect x="36" y="38" width="8" height="5" fill="${mc.f}"/>`:`<rect x="32" y="26" width="16" height="12" rx="3" fill="url(#mg${id})" stroke="${mc.s}" stroke-width="0.5"/>`}</svg>`;}
+  else if(t==='collier'){svg=`<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">${defs}<path d="M8,20 Q40,58 72,20" fill="none" stroke="url(#mg${id})" stroke-width="2.5" stroke-linecap="round"/>${pc?`<polygon points="40,55 49,68 40,76 31,68" fill="url(#pg${id})" stroke="${mc.s}" stroke-width="0.8"/>`:`<circle cx="40" cy="66" r="7" fill="${mc.f}" stroke="${mc.s}" stroke-width="0.8"/>`}</svg>`;}
+  else if(t==='bracelet'){svg=`<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">${defs}<ellipse cx="40" cy="44" rx="28" ry="18" fill="none" stroke="url(#mg${id})" stroke-width="7"/><ellipse cx="40" cy="44" rx="28" ry="18" fill="none" stroke="${mc.sh}" stroke-width="0.8" opacity="0.3"/>${pc?`<circle cx="40" cy="26" r="6" fill="url(#pg${id})" stroke="${mc.s}" stroke-width="0.8"/>`:''}</svg>`;}
+  else if(t==='boucles'){svg=`<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">${defs}${pc?`<circle cx="24" cy="46" r="12" fill="url(#pg${id})" stroke="${mc.s}" stroke-width="1"/><circle cx="56" cy="46" r="12" fill="url(#pg${id})" stroke="${mc.s}" stroke-width="1"/>`:`<circle cx="24" cy="46" r="12" fill="url(#mg${id})" stroke="${mc.s}" stroke-width="1"/><circle cx="56" cy="46" r="12" fill="url(#mg${id})" stroke="${mc.s}" stroke-width="1"/>`}<circle cx="24" cy="24" r="3" fill="${mc.f}" stroke="${mc.s}" stroke-width="0.8"/><circle cx="56" cy="24" r="3" fill="${mc.f}" stroke="${mc.s}" stroke-width="0.8"/></svg>`;}
+  else{svg=`<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="28" fill="none" stroke="rgba(201,169,110,0.12)" stroke-width="0.5" stroke-dasharray="3 3"/><text x="40" y="47" text-anchor="middle" font-size="22" fill="rgba(201,169,110,0.2)" font-family="serif">◇</text></svg>`;}
+  document.getElementById('jewel-wrap').innerHTML=svg;
+}
+function handleFiles(files){
+  const previews=document.getElementById('upload-previews');
+  const remaining=5-state.files.length;
+  Array.from(files).slice(0,remaining).forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const idx=state.files.length;
+      state.files.push({name:file.name,dataUrl:e.target.result});
+      const wrap=document.createElement('div');
+      wrap.className='upload-thumb';
+      wrap.innerHTML=`<img src="${e.target.result}" alt="inspiration"><div class="del-thumb" onclick="removeThumb(${idx})">✕</div>`;
+      previews.appendChild(wrap);
+      if(state.files.length>=5)document.getElementById('upload-text').innerHTML='Maximum 5 fichiers atteint';
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function removeThumb(idx){
+  state.files.splice(idx,1);
+  const previews=document.getElementById('upload-previews');
+  previews.innerHTML='';
+  state.files.forEach((f,i)=>{
+    const wrap=document.createElement('div');
+    wrap.className='upload-thumb';
+    wrap.innerHTML=`<img src="${f.dataUrl}" alt="inspiration"><div class="del-thumb" onclick="removeThumb(${i})">✕</div>`;
+    previews.appendChild(wrap);
+  });
+  if(state.files.length<5)document.getElementById('upload-text').innerHTML='Glissez vos images ici ou <b>parcourir</b><br>JPG, PNG, GIF · Max 5 fichiers';
+}
+function next(){
+  if(!document.getElementById('btn-cont').classList.contains('ready'))return;
+  if(state.step===3){state.note=document.getElementById('note-area').value;showRecap();return;}
+  goStep(state.step+1);
+}
+function back(){if(state.step>0)goStep(state.step-1);}
+function goStep(n){
+  document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active',i===n));
+  state.step=n;
+  for(let i=0;i<4;i++){
+    document.getElementById('pd'+i).classList.toggle('active',i===n);
+    document.getElementById('pd'+i).classList.toggle('done',i<n);
+    document.getElementById('pl'+i).classList.toggle('active',i===n);
+    if(i<3)document.getElementById('pline'+i).classList.toggle('done',i<n);
+  }
+  document.getElementById('btn-back').style.display=n>0?'block':'none';
+  document.getElementById('btn-cont').classList.remove('ready');
+  document.getElementById('btn-cont').textContent=n===3?'Voir le récapitulatif →':'Continuer →';
+  const keys=['type','metal','pierre',null];
+  const val=keys[n]?state[keys[n]]:null;
+  if(val){document.getElementById('panel-'+n).querySelectorAll('button').forEach(b=>{if((b.getAttribute('onclick')||'').includes("'"+val+"'")){b.classList.add('sel');document.getElementById('btn-cont').classList.add('ready');}});}
+  if(n===3&&state.occasion){document.getElementById('occ-grid').querySelectorAll('button').forEach(b=>{if((b.getAttribute('onclick')||'').includes("'"+state.occasion+"'"))b.classList.add('sel');});document.getElementById('btn-cont').classList.add('ready');}
+}
+function showRecap(){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('recap-zone').style.display='block';
+  document.getElementById('nav-bar').style.display='none';
+  for(let i=0;i<4;i++){document.getElementById('pd'+i).classList.remove('active');document.getElementById('pd'+i).classList.add('done');document.getElementById('pl'+i).classList.remove('active');if(i<3)document.getElementById('pline'+i).classList.add('done');}
+  const pierre=state.pierre==='moissanite'?'Moissanite (cert. GRA)':state.pierre==='diamant'?'Diamant (cert. GIA/IGI)':NAMES.pierre[state.pierre]||'—';
+  const rows=[['Type de bijou',NAMES.type[state.type]||'—'],['Métal',NAMES.metal[state.metal]||'—'],['Pierre',pierre],['Occasion',NAMES.occasion[state.occasion]||'—']];
+  if(state.note.trim())rows.push(['Notes',state.note.trim()]);
+  let html=rows.map(([k,v])=>`<div class="recap-row"><span class="rk">${k}</span><span class="rv">${v}</span></div>`).join('');
+  if(state.files.length>0){const thumbs=state.files.map(f=>`<img class="inspi-thumb" src="${f.dataUrl}" alt="inspiration">`).join('');html+=`<div class="recap-row inspi-row"><div><span class="rk">Inspirations (${state.files.length} image${state.files.length>1?'s':''})</span><div class="inspi-thumbs">${thumbs}</div></div></div>`;}
+  document.getElementById('recap-rows').innerHTML=html;
+  document.getElementById('ai-box').className='ai-box';
+  document.getElementById('ai-box').textContent='';
+  document.getElementById('ai-btn').textContent='✦ Générer la description poétique de mon bijou';
+  document.getElementById('ai-btn').disabled=false;
+}
+async function genDesc(){
+  const btn=document.getElementById('ai-btn');
+  const box=document.getElementById('ai-box');
+  btn.textContent='✦ Génération en cours…';btn.disabled=true;
+  box.className='ai-box show';box.textContent='…';
+  const p=`Tu es le poète officiel de Rodier&Co, bijouterie parisienne sur-mesure. Écris une description poétique et luxueuse en 3 phrases pour cette pièce : ${NAMES.type[state.type]||''} en ${NAMES.metal[state.metal]||''}, pierre ${NAMES.pierre[state.pierre]||''}, occasion : ${NAMES.occasion[state.occasion]||''}${state.note?' — note client : '+state.note:''}. Style lyrique, sensoriel, vocabulaire luxe parisien, inspire-toi de Cartier ou Boucheron. Commence directement. Uniquement le texte poétique.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:p}]})});
+    const data=await res.json();
+    box.textContent=data.content?.find(b=>b.type==='text')?.text||'Erreur.';
+  }catch(e){box.textContent='Erreur réseau.';}
+  btn.textContent='↺ Regénérer';btn.disabled=false;
+}
+function copyDM(){
+  const pierre=state.pierre==='moissanite'?'Moissanite (certificat GRA inclus)':state.pierre==='diamant'?'Diamant (certificat GIA/IGI inclus)':NAMES.pierre[state.pierre]||'?';
+  const nb=state.files.length;
+  const msg=`Bonjour, j'ai configuré mon bijou sur votre simulateur :\n\n💍 ${NAMES.type[state.type]||'?'}\n⚙️ ${NAMES.metal[state.metal]||'?'}\n💎 ${pierre}\n🎯 Occasion : ${NAMES.occasion[state.occasion]||'?'}${state.note?'\n📝 Notes : '+state.note:''}${nb>0?`\n🖼 ${nb} image${nb>1?'s':''} d'inspiration jointe${nb>1?'s':''}`:''}\n\nPouvez-vous me faire un devis ?`;
+  navigator.clipboard.writeText(msg).then(()=>{const el=document.getElementById('copied-msg');el.className='copied-msg show';setTimeout(()=>el.className='copied-msg',3000);});
+}
+function reset(){
+  Object.assign(state,{type:null,metal:null,pierre:null,occasion:null,note:'',files:[],step:0});
+  document.getElementById('recap-zone').style.display='none';
+  document.getElementById('nav-bar').style.display='flex';
+  document.getElementById('preview').style.display='none';
+  document.getElementById('upload-previews').innerHTML='';
+  document.getElementById('note-area').value='';
+  document.getElementById('upload-text').innerHTML='Glissez vos images ici ou <b>parcourir</b><br>JPG, PNG, GIF · Max 5 fichiers';
+  document.querySelectorAll('.opt,.metal-opt,.occ-btn').forEach(b=>b.classList.remove('sel'));
+  for(let i=0;i<4;i++){document.getElementById('pd'+i).classList.remove('active','done');document.getElementById('pl'+i).classList.remove('active');if(i<3)document.getElementById('pline'+i).classList.remove('done');}
+  document.getElementById('pd0').classList.add('active');document.getElementById('pl0').classList.add('active');
+  document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active',i===0));
+  document.getElementById('btn-back').style.display='none';
+  document.getElementById('btn-cont').classList.remove('ready');
+  document.getElementById('btn-cont').textContent='Continuer →';
+  drawJewel();
+}
+drawJewel();
+</script>
+</body>
+</html>

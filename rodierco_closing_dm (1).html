@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rodier&Co — Closing DM Engine</title>
+<style>
+:root {
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f5f4f0;
+  --color-background-tertiary: #eeece6;
+  --color-background-success: #eaf3de;
+  --color-background-info: #e6f1fb;
+  --color-background-danger: #fcebeb;
+  --color-background-warning: #faeeda;
+  --color-text-primary: #1a1a18;
+  --color-text-secondary: #73726c;
+  --color-text-tertiary: #9c9a92;
+  --color-text-success: #3b6d11;
+  --color-text-info: #185fa5;
+  --color-text-danger: #a32d2d;
+  --color-text-warning: #854f0b;
+  --color-border-tertiary: rgba(26,26,24,0.15);
+  --color-border-secondary: rgba(26,26,24,0.3);
+  --color-border-primary: rgba(26,26,24,0.4);
+  --font-sans: system-ui, -apple-system, sans-serif;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background-primary: #1e1e1c;
+    --color-background-secondary: #2a2a27;
+    --color-background-tertiary: #242422;
+    --color-background-success: #173404;
+    --color-background-info: #042c53;
+    --color-background-danger: #501313;
+    --color-background-warning: #412402;
+    --color-text-primary: #e8e6de;
+    --color-text-secondary: #9c9a92;
+    --color-text-tertiary: #6e6c65;
+    --color-text-success: #97c459;
+    --color-text-info: #85b7eb;
+    --color-text-danger: #f09595;
+    --color-text-warning: #ef9f27;
+    --color-border-tertiary: rgba(232,230,222,0.15);
+    --color-border-secondary: rgba(232,230,222,0.3);
+    --color-border-primary: rgba(232,230,222,0.4);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--color-background-tertiary);color:var(--color-text-primary);min-height:100vh}
+.app{max-width:680px;margin:0 auto;background:var(--color-background-primary);min-height:100vh}
+
+.header{padding:1.5rem 1rem 1rem;border-bottom:0.5px solid var(--color-border-tertiary);text-align:center}
+.header-eyebrow{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--color-text-secondary);margin-bottom:5px}
+.header-title{font-size:20px;font-weight:500}
+.header-sub{font-size:12px;color:var(--color-text-secondary);margin-top:3px}
+
+.tabs{display:flex;border-bottom:0.5px solid var(--color-border-tertiary)}
+.tab{flex:1;padding:10px 6px;text-align:center;font-size:12px;cursor:pointer;color:var(--color-text-secondary);border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-sans);transition:all 0.15s}
+.tab.active{color:var(--color-text-primary);border-bottom-color:var(--color-text-primary);font-weight:500}
+.tab-section{display:none;padding:1rem}
+.tab-section.active{display:block}
+
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
+.label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-secondary);margin-bottom:8px}
+
+.context-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.ctx-btn{padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:8px;font-size:12px;cursor:pointer;background:transparent;color:var(--color-text-primary);font-family:var(--font-sans);text-align:left;transition:all 0.15s;line-height:1.3}
+.ctx-btn:hover,.ctx-btn.active{border-color:var(--color-border-primary);background:var(--color-background-secondary)}
+.ctx-btn.active{font-weight:500}
+.ctx-icon{font-size:14px;margin-bottom:2px;display:block}
+.ctx-name{font-size:12px;display:block}
+.ctx-desc{font-size:10px;color:var(--color-text-secondary);display:block;margin-top:1px}
+
+.tone-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tone-chip{padding:5px 11px;border-radius:99px;font-size:11px;border:0.5px solid var(--color-border-tertiary);cursor:pointer;background:transparent;color:var(--color-text-secondary);font-family:var(--font-sans);transition:all 0.15s}
+.tone-chip:hover{color:var(--color-text-primary);border-color:var(--color-border-secondary)}
+.tone-chip.active{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+
+textarea{width:100%;font-size:13px;padding:10px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:8px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans);resize:vertical;outline:none;line-height:1.6;transition:border-color 0.15s}
+textarea:focus{border-color:var(--color-border-primary)}
+
+.generate-btn{width:100%;padding:11px;background:var(--color-text-primary);color:var(--color-background-primary);border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-sans);transition:opacity 0.15s;margin-top:8px;letter-spacing:0.02em}
+.generate-btn:hover{opacity:0.85}
+.generate-btn:disabled{opacity:0.5;cursor:not-allowed}
+
+.response-area{display:none;margin-top:0}
+.response-card{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;overflow:hidden}
+.response-header{padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:space-between}
+.response-tag{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-secondary);display:flex;align-items:center;gap:6px}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--color-text-success);animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.7)}}
+.response-text{padding:14px;font-size:13px;line-height:1.75;white-space:pre-wrap;min-height:80px}
+.action-row{display:flex;gap:6px;padding:0 14px 12px;flex-wrap:wrap}
+.action-btn{font-size:11px;padding:5px 12px;border:0.5px solid var(--color-border-secondary);border-radius:99px;background:transparent;color:var(--color-text-secondary);cursor:pointer;font-family:var(--font-sans);transition:all 0.15s}
+.action-btn:hover{background:var(--color-background-primary);color:var(--color-text-primary)}
+
+.variants-row{display:none;flex-direction:column;gap:6px;padding:0 14px 12px}
+.variant-item{padding:10px 12px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:8px;font-size:12px;line-height:1.6;cursor:pointer;transition:border-color 0.15s;white-space:pre-wrap}
+.variant-item:hover{border-color:var(--color-border-primary)}
+.variant-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-secondary);margin-bottom:4px}
+
+.prospect-info{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.info-field input{width:100%;font-size:12px;padding:7px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:8px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans);outline:none}
+.info-field input:focus{border-color:var(--color-border-primary)}
+.info-label{font-size:10px;color:var(--color-text-secondary);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em}
+.char-count{font-size:11px;color:var(--color-text-secondary);text-align:right;margin-top:4px}
+
+.script-block{border:0.5px solid var(--color-border-tertiary);border-radius:10px;overflow:hidden;margin-bottom:8px}
+.script-header{padding:8px 12px;background:var(--color-background-secondary);border-bottom:0.5px solid var(--color-border-tertiary);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-secondary);display:flex;justify-content:space-between;align-items:center}
+.script-text{padding:12px;font-size:13px;line-height:1.7;white-space:pre-wrap}
+
+.tips-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tip-card{padding:10px 12px;background:var(--color-background-secondary);border-radius:8px;border:0.5px solid var(--color-border-tertiary)}
+.tip-title{font-size:12px;font-weight:500;margin-bottom:4px}
+.tip-body{font-size:11px;color:var(--color-text-secondary);line-height:1.5}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="header">
+  <div class="header-eyebrow">Rodier&amp;Co</div>
+  <div class="header-title">Closing DM Engine</div>
+  <div class="header-sub">Colle le message du prospect — Claude te génère la réponse parfaite</div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('generator')">Générateur</button>
+  <button class="tab" onclick="switchTab('scripts')">Scripts prêts</button>
+  <button class="tab" onclick="switchTab('tips')">Tactiques</button>
+</div>
+
+<!-- GENERATOR -->
+<div id="tab-generator" class="tab-section active">
+  <div class="card">
+    <div class="label">Contexte du prospect</div>
+    <div class="context-grid">
+      <button class="ctx-btn active" onclick="selectCtx(this,'cold')"><span class="ctx-icon">🧊</span><span class="ctx-name">Premier contact</span><span class="ctx-desc">Jamais répondu / nouveau</span></button>
+      <button class="ctx-btn" onclick="selectCtx(this,'warm')"><span class="ctx-icon">🔥</span><span class="ctx-name">Prospect chaud</span><span class="ctx-desc">A montré de l'intérêt</span></button>
+      <button class="ctx-btn" onclick="selectCtx(this,'ghost')"><span class="ctx-icon">👻</span><span class="ctx-name">Ghost / silence</span><span class="ctx-desc">Plus de réponse depuis X jours</span></button>
+      <button class="ctx-btn" onclick="selectCtx(this,'objection')"><span class="ctx-icon">⚡</span><span class="ctx-name">Objection prix</span><span class="ctx-desc">"C'est trop cher" / hésite</span></button>
+      <button class="ctx-btn" onclick="selectCtx(this,'close')"><span class="ctx-icon">💰</span><span class="ctx-name">Prêt à acheter</span><span class="ctx-desc">Demande le prix / les détails</span></button>
+      <button class="ctx-btn" onclick="selectCtx(this,'relance')"><span class="ctx-icon">🔄</span><span class="ctx-name">Relance post-devis</span><span class="ctx-desc">A reçu le devis, silence</span></button>
+    </div>
+
+    <div class="label">Infos prospect (optionnel)</div>
+    <div class="prospect-info">
+      <div class="info-field"><div class="info-label">Prénom</div><input type="text" id="prospect-name" placeholder="Ex: Kévin"></div>
+      <div class="info-field"><div class="info-label">Produit visé</div><input type="text" id="prospect-product" placeholder="Ex: bague moissanite"></div>
+    </div>
+
+    <div class="label">Ton du message</div>
+    <div class="tone-row">
+      <button class="tone-chip active" onclick="selectTone(this,'naturel')">Naturel Frère</button>
+      <button class="tone-chip" onclick="selectTone(this,'pro')">Pro &amp; sérieux</button>
+      <button class="tone-chip" onclick="selectTone(this,'urgent')">Urgence douce</button>
+      <button class="tone-chip" onclick="selectTone(this,'valeur')">Valeur avant prix</button>
+      <button class="tone-chip" onclick="selectTone(this,'court')">Ultra court</button>
+    </div>
+
+    <div class="label">Dernier message du prospect (ou situation)</div>
+    <textarea id="prospect-msg" rows="4" placeholder="Colle ici le dernier message du prospect…&#10;&#10;Ex: &quot;Ouais ça m'intéresse mais je sais pas trop le budget que j'ai&quot;"></textarea>
+    <div class="char-count" id="char-count">0 caractères</div>
+
+    <button class="generate-btn" id="gen-btn" onclick="generateResponse()">Générer la réponse ↗</button>
+  </div>
+
+  <div class="response-area" id="response-area">
+    <div class="response-card">
+      <div class="response-header">
+        <div class="response-tag"><div class="ai-dot"></div>Réponse générée</div>
+        <div style="display:flex;gap:6px">
+          <button class="action-btn" onclick="regenerate()">↺ Regénérer</button>
+          <button class="action-btn" id="copy-btn" onclick="copyResponse()">Copier</button>
+        </div>
+      </div>
+      <div class="response-text" id="response-text"></div>
+      <div class="action-row">
+        <button class="action-btn" onclick="toggleVariants()">Voir variantes</button>
+        <button class="action-btn" onclick="generateFollowup()">→ Suite du DM</button>
+      </div>
+      <div class="variants-row" id="variants-row"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<div id="tab-scripts" class="tab-section">
+  <div class="label" style="margin-bottom:8px">Scripts éprouvés — cliquer pour copier</div>
+
+  <div class="script-block">
+    <div class="script-header">Premier contact — likeur récurrent <button class="action-btn" onclick="copyScript(this)">Copier</button></div>
+    <div class="script-text">Frère t'as l'œil 👀 tu likes souvent nos pièces — t'as un projet en tête ou tu cherches encore ?</div>
+  </div>
+
+  <div class="script-block">
+    <div class="script-header">Objection prix — réponse valeur <button class="action-btn" onclick="copyScript(this)">Copier</button></div>
+    <div class="script-text">Je comprends frère. Dis-moi juste c'est pour quoi comme occasion ? Parce que selon ce que tu veux on peut trouver quelque chose dans ton budget sans sacrifier la qualité — on fait ça tout le temps.</div>
+  </div>
+
+  <div class="script-block">
+    <div class="script-header">Ghost 3 jours — relance douce <button class="action-btn" onclick="copyScript(this)">Copier</button></div>
+    <div class="script-text">Frère je relance pas pour rien — on vient de finir une pièce similaire à ce qu'on avait évoqué, je me suis dit que ça pouvait t'intéresser. Tu veux que je t'envoie des photos ?</div>
+  </div>
+
+  <div class="script-block">
+    <div class="script-header">Prospect chaud — qualifier le budget <button class="action-btn" onclick="copyScript(this)">Copier</button></div>
+    <div class="script-text">C'est pour offrir ou pour toi frère ? Et t'as une idée de fourchette de budget ou on part de zéro ?</div>
+  </div>
+
+  <div class="script-block">
+    <div class="script-header">Closing — passer à la commande <button class="action-btn" onclick="copyScript(this)">Copier</button></div>
+    <div class="script-text">Parfait frère. Je te prépare le devis aujourd'hui — pour lancer la fabrication je prends 50% d'acompte et le reste à la remise. Tu veux qu'on règle ça comment ?</div>
+  </div>
+
+  <div class="script-block">
+    <div class="script-header">Post-livraison — demande d'avis <button class="action-btn" onclick="copyScript(this)">Copier</button></div>
+    <div class="script-text">Frère j'espère que la pièce te plaît toujours autant 😤 si t'as 2 secondes un avis Google ou une story ça m'aide vraiment — et si t'as un proche qui cherche quelque chose dis-lui de passer en DM 🤝</div>
+  </div>
+</div>
+
+<!-- TIPS -->
+<div id="tab-tips" class="tab-section">
+  <div class="label" style="margin-bottom:8px">Les règles du closing en DM</div>
+  <div class="tips-grid">
+    <div class="tip-card"><div class="tip-title">1 message = 1 question</div><div class="tip-body">Jamais 3 questions d'un coup. Une seule, ouverte, qui force une réponse courte.</div></div>
+    <div class="tip-card"><div class="tip-title">Ne pitch jamais en premier</div><div class="tip-body">Ouvre toujours avec une question sur leur projet. Le pitch arrive après avoir compris leur besoin.</div></div>
+    <div class="tip-card"><div class="tip-title">La règle des 24h</div><div class="tip-body">Si pas de réponse en 24h, relance une seule fois avec une nouvelle valeur (photo, pièce similaire).</div></div>
+    <div class="tip-card"><div class="tip-title">Objection = question</div><div class="tip-body">"C'est cher" → "Pour quelle occasion ?" Retourner vers leurs besoins, pas défendre le prix.</div></div>
+    <div class="tip-card"><div class="tip-title">Créer de l'urgence douce</div><div class="tip-body">"On a peu de dispo ce mois-ci" — jamais de fausse urgence agressive.</div></div>
+    <div class="tip-card"><div class="tip-title">Qualifier d'abord</div><div class="tip-body">Budget ? Pour offrir ou pour soi ? Délai ? Ces 3 questions qualifient 90% des prospects.</div></div>
+    <div class="tip-card"><div class="tip-title">Le silence est normal</div><div class="tip-body">70% des prospects ghostent avant de revenir. Relance à J+7 avec un nouveau contenu.</div></div>
+    <div class="tip-card"><div class="tip-title">Toujours finir par un choix</div><div class="tip-body">"Tu préfères or ou argent ?" Le choix fermé est plus facile à répondre et avance la conversation.</div></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+let currentCtx = 'cold';
+let currentTone = 'naturel';
+let currentResponse = '';
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function selectCtx(btn, val) {
+  document.querySelectorAll('.ctx-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentCtx = val;
+}
+
+function selectTone(btn, val) {
+  document.querySelectorAll('.tone-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentTone = val;
+}
+
+document.getElementById('prospect-msg').addEventListener('input', function() {
+  document.getElementById('char-count').textContent = this.value.length + ' caractères';
+});
+
+function buildPrompt(forVariants) {
+  const ctxLabels = {
+    cold: 'premier contact / prospect froid qui a jamais répondu ou vient de découvrir la marque',
+    warm: 'prospect chaud qui a montré de l\'intérêt (liked, commenté, posé une question)',
+    ghost: 'prospect qui ghoste depuis plusieurs jours sans répondre',
+    objection: 'prospect qui fait une objection sur le prix ou hésite à cause du budget',
+    close: 'prospect prêt à acheter qui demande les détails ou le prix',
+    relance: 'prospect qui a reçu un devis et ne répond plus depuis'
+  };
+  const toneLabels = {
+    naturel: 'Ton naturel, authentique, comme parler à un pote. Utiliser "Frère" naturellement. Phrases courtes.',
+    pro: 'Ton professionnel mais chaleureux. Pas trop formel, mais sérieux et crédible.',
+    urgent: 'Créer une urgence douce et naturelle sans paraître désespéré.',
+    valeur: 'Mettre en avant la valeur et la qualité avant tout. Justifier le positionnement premium de Rodier&Co.',
+    court: 'Ultra court — maximum 1-2 phrases. Un message flash qui demande une réponse simple.'
+  };
+  const name = document.getElementById('prospect-name').value;
+  const product = document.getElementById('prospect-product').value;
+  const msg = document.getElementById('prospect-msg').value;
+
+  return `Tu es Hassan, fondateur de Rodier&Co, une marque de bijoux luxe sur-mesure à Paris (diamant, moissanite, argent 925). Tu réponds à des prospects en DM Instagram.
+
+Contexte : ${ctxLabels[currentCtx]}
+Ton : ${toneLabels[currentTone]}
+${name ? 'Prénom du prospect : ' + name : ''}
+${product ? 'Produit visé : ' + product : ''}
+Dernier message / situation : "${msg || 'Pas de message — crée une relance adaptée au contexte'}"
+
+${forVariants ? 'Génère 3 variantes de réponse numérotées (1., 2., 3.), chacune avec une approche légèrement différente. Sépare-les par une ligne vide.' : 'Génère UNE seule réponse DM parfaite.'}
+
+Règles absolues :
+- Maximum 3 lignes au total
+- Une seule question à la fin maximum
+- Jamais de liste, jamais de bullet points
+- Jamais de pitch produit immédiat
+- Naturel, jamais corporate
+- Pas de "Bonjour", pas de "Cordialement"
+- Si le contexte est "premier contact" : ouvrir avec curiosité, pas avec une offre
+- Le but est d'obtenir UNE réponse, pas de vendre immédiatement
+
+Génère uniquement le texte du message, sans introduction ni explication.`;
+}
+
+async function callClaude(prompt) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  const data = await res.json();
+  return data.content?.find(b => b.type === 'text')?.text || 'Erreur de génération.';
+}
+
+async function generateResponse() {
+  const btn = document.getElementById('gen-btn');
+  const area = document.getElementById('response-area');
+  const textEl = document.getElementById('response-text');
+  const variantsRow = document.getElementById('variants-row');
+  btn.disabled = true;
+  btn.textContent = 'Claude analyse le message…';
+  area.style.display = 'block';
+  textEl.textContent = '✦ Génération en cours…';
+  variantsRow.style.display = 'none';
+  variantsRow.innerHTML = '';
+  try {
+    currentResponse = await callClaude(buildPrompt(false));
+    textEl.textContent = currentResponse;
+  } catch(e) { textEl.textContent = 'Erreur réseau. Réessaie.'; }
+  btn.disabled = false;
+  btn.textContent = 'Générer la réponse ↗';
+}
+
+async function regenerate() {
+  const textEl = document.getElementById('response-text');
+  textEl.textContent = '✦ Nouvelle version…';
+  try {
+    currentResponse = await callClaude(buildPrompt(false));
+    textEl.textContent = currentResponse;
+  } catch(e) { textEl.textContent = 'Erreur réseau.'; }
+}
+
+async function toggleVariants() {
+  const row = document.getElementById('variants-row');
+  if (row.style.display === 'flex') { row.style.display = 'none'; return; }
+  row.style.display = 'flex';
+  row.innerHTML = '<div style="font-size:12px;color:var(--color-text-secondary);padding:4px 0">Génération des variantes…</div>';
+  try {
+    const text = await callClaude(buildPrompt(true));
+    const variants = text.split(/\n\n+/).filter(v => v.trim().length > 0).slice(0, 3);
+    row.innerHTML = '<div class="variant-label">3 variantes — cliquer pour utiliser</div>';
+    variants.forEach(v => {
+      const el = document.createElement('div');
+      el.className = 'variant-item';
+      el.textContent = v.replace(/^\d+\.\s*/, '');
+      el.onclick = () => {
+        currentResponse = el.textContent;
+        document.getElementById('response-text').textContent = currentResponse;
+        row.style.display = 'none';
+      };
+      row.appendChild(el);
+    });
+  } catch(e) { row.innerHTML = '<div style="font-size:12px;color:var(--color-text-secondary)">Erreur réseau.</div>'; }
+}
+
+async function generateFollowup() {
+  const textEl = document.getElementById('response-text');
+  const prev = currentResponse;
+  textEl.textContent = '✦ Suite du DM en cours…';
+  const prompt = `Tu es Hassan de Rodier&Co. Tu viens d'envoyer ce message en DM : "${prev}"\n\nLe prospect a répondu positivement. Génère la suite naturelle de la conversation — le message suivant pour avancer vers une commande. Maximum 2 lignes, une seule question, même style.`;
+  try {
+    currentResponse = await callClaude(prompt);
+    textEl.textContent = currentResponse;
+  } catch(e) { textEl.textContent = 'Erreur réseau.'; }
+}
+
+function copyResponse() {
+  if (!currentResponse) return;
+  navigator.clipboard.writeText(currentResponse).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copié ✓';
+    setTimeout(() => btn.textContent = 'Copier', 1500);
+  });
+}
+
+function copyScript(btn) {
+  const text = btn.closest('.script-block').querySelector('.script-text').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copié ✓';
+    setTimeout(() => btn.textContent = 'Copier', 1500);
+  });
+}
+</script>
+</body>
+</html>
