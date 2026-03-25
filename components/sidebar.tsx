@@ -12,6 +12,7 @@ import {
   Settings,
   Bell,
   ChevronRight,
+  Newspaper,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +53,12 @@ const navItems = [
     href: "/stockage",
     icon: HardDrive,
     badge: null,
+  },
+  {
+    title: "Actualités",
+    href: "/actualites",
+    icon: Newspaper,
+    badge: "25",
   },
 ];
 
